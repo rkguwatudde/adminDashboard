@@ -163,7 +163,7 @@ export default function LedgerPage() {
               <CardTitle className="text-sm font-medium text-gray-600">Total Transactions</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-blue-600">
+              <div className="text-2xl font-bold text-green-600">
                 {transactions.length}
               </div>
             </CardContent>
@@ -193,7 +193,7 @@ export default function LedgerPage() {
                 <select
                   value={typeFilter}
                   onChange={(e) => setTypeFilter(e.target.value)}
-                  className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                 >
                   <option value="All">All Types</option>
                   <option value="Credit">Credits</option>

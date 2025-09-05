@@ -14,7 +14,7 @@ const stats = [
     change: '+12%',
     changeType: 'positive',
     icon: Users,
-    color: 'text-blue-600'
+    color: 'text-green-600'
   },
   {
     title: 'Active Bonds',
@@ -85,7 +85,7 @@ export default function DashboardPage() {
               <span className="text-sm text-gray-500">Role:</span>
               <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
                 user?.role === 'SUPER_ADMIN' ? 'bg-purple-100 text-purple-800' :
-                user?.role === 'ADMIN' ? 'bg-blue-100 text-green-800' :
+                user?.role === 'ADMIN' ? 'bg-green-100 text-green-800' :
                 'bg-green-100 text-green-800'
               }`}>
                 {user?.role}
@@ -205,7 +205,7 @@ export default function DashboardPage() {
               ].map((activity, index) => (
                 <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                   <div className="flex items-center space-x-3">
-                    <Activity className="h-4 w-4 text-blue-600" />
+                    <Activity className="h-4 w-4 text-green-600" />
                     <div>
                       <p className="text-sm font-medium text-gray-900">{activity.action}</p>
                       <p className="text-xs text-gray-500">by {activity.user}</p>

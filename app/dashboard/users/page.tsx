@@ -182,7 +182,7 @@ export default function UsersPage() {
             
             <div className="flex items-center justify-center h-64">
               <div className="text-center">
-                <RefreshCw className="h-8 w-8 animate-spin text-blue-600 mx-auto mb-4" />
+                <RefreshCw className="h-8 w-8 animate-spin text-green-600 mx-auto mb-4" />
                 <p className="text-gray-600">Loading users...</p>
               </div>
             </div>
@@ -203,7 +203,7 @@ export default function UsersPage() {
                 <h1 className="text-3xl font-bold text-gray-900">User Management</h1>
                 <p className="text-gray-600">Manage all registered users and their profiles</p>
               </div>
-              <Button onClick={fetchUsers} className="bg-blue-600 hover:bg-blue-700">
+              <Button onClick={fetchUsers} className="bg-green-600 hover:bg-green-700">
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Retry
               </Button>
@@ -244,7 +244,7 @@ export default function UsersPage() {
                 )}
               </p>
             </div>
-            <Button className="bg-blue-600 hover:bg-blue-700">
+            <Button className="bg-green-600 hover:bg-green-700">
               <Plus className="h-4 w-4 mr-2" />
               Add New User
             </Button>
@@ -285,7 +285,7 @@ export default function UsersPage() {
                 <CardTitle className="text-sm font-medium text-gray-600">Onboarding Complete</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-blue-600">
+                <div className="text-2xl font-bold text-green-600">
                   {users.filter(u => u.onboarding_completed).length}
                 </div>
               </CardContent>
@@ -315,7 +315,7 @@ export default function UsersPage() {
                   <select
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value)}
-                    className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                   >
                     <option value="all">All Statuses</option>
                     <option value="pending">Pending</option>
@@ -325,7 +325,7 @@ export default function UsersPage() {
                   <select
                     value={userTypeFilter}
                     onChange={(e) => setUserTypeFilter(e.target.value)}
-                    className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                   >
                     <option value="all">All Types</option>
                     <option value="customer">Customer</option>
@@ -375,7 +375,7 @@ export default function UsersPage() {
                       <TableCell>
                         <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
                           user.user_type === 'admin' ? 'bg-purple-100 text-purple-800' :
-                          'bg-blue-100 text-blue-800'
+                          'bg-green-100 text-green-800'
                         }`}>
                           {user.user_type}
                         </span>
@@ -448,7 +448,7 @@ export default function UsersPage() {
                   {[
                     { label: 'Completed', count: users.filter(u => u.onboarding_completed).length, color: 'bg-green-100 text-green-800' },
                     { label: 'In Progress', count: users.filter(u => !u.onboarding_completed).length, color: 'bg-yellow-100 text-yellow-800' },
-                    { label: 'Precise FP Complete', count: users.filter(u => u.precise_fp_form_completed).length, color: 'bg-blue-100 text-blue-800' },
+                    { label: 'Precise FP Complete', count: users.filter(u => u.precise_fp_form_completed).length, color: 'bg-green-100 text-green-800' },
                     { label: 'Compliance Docs Sent', count: users.filter(u => u.compliance_docs_sent).length, color: 'bg-purple-100 text-purple-800' },
                   ].map((item, index) => (
                     <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
@@ -471,7 +471,7 @@ export default function UsersPage() {
               <CardContent>
                 <div className="space-y-3">
                   {[
-                    { label: 'Customers', count: users.filter(u => u.user_type === 'customer').length, color: 'bg-blue-100 text-blue-800' },
+                    { label: 'Customers', count: users.filter(u => u.user_type === 'customer').length, color: 'bg-green-100 text-green-800' },
                     { label: 'Admins', count: users.filter(u => u.user_type === 'admin').length, color: 'bg-red-100 text-red-800' },
                     { label: 'Verified', count: users.filter(u => u.verification_status === 'verified').length, color: 'bg-green-100 text-green-800' },
                     { label: 'Pending Verification', count: users.filter(u => u.verification_status === 'pending').length, color: 'bg-yellow-100 text-yellow-800' },

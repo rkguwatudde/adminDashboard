@@ -23,7 +23,7 @@ module.exports = {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: "#1e40af", // BoraBond blue
+          DEFAULT: "#16a34a", // BoraBond green
           foreground: "hsl(var(--primary-foreground))",
         },
         secondary: {

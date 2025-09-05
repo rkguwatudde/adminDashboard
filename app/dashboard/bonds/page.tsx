@@ -162,7 +162,7 @@ export default function BondsPage() {
             
             <div className="flex items-center justify-center h-64">
               <div className="text-center">
-                <RefreshCw className="h-8 w-8 animate-spin text-blue-600 mx-auto mb-4" />
+                <RefreshCw className="h-8 w-8 animate-spin text-green-600 mx-auto mb-4" />
                 <p className="text-gray-600">Loading bonds...</p>
               </div>
             </div>
@@ -183,7 +183,7 @@ export default function BondsPage() {
                 <h1 className="text-3xl font-bold text-gray-900">Bond Management</h1>
                 <p className="text-gray-600">Manage and monitor all available bonds</p>
               </div>
-              <Button onClick={fetchBonds} className="bg-blue-600 hover:bg-blue-700">
+              <Button onClick={fetchBonds} className="bg-green-600 hover:bg-green-700">
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Retry
               </Button>
@@ -224,7 +224,7 @@ export default function BondsPage() {
                 )}
               </p>
             </div>
-            <Button className="bg-blue-600 hover:bg-blue-700">
+            <Button className="bg-green-600 hover:bg-green-700">
               <Plus className="h-4 w-4 mr-2" />
               Add New Bond
             </Button>
@@ -255,7 +255,7 @@ export default function BondsPage() {
                 <CardTitle className="text-sm font-medium text-gray-600">Total Value</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-blue-600">
+                <div className="text-2xl font-bold text-green-600">
                   {formatCurrency(
                     bonds.reduce((sum, bond) => sum + bond.available_amount, 0),
                     'UGX'
@@ -298,7 +298,7 @@ export default function BondsPage() {
                   <select
                     value={countryFilter}
                     onChange={(e) => setCountryFilter(e.target.value)}
-                    className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                   >
                     <option value="all">All Countries</option>
                     {uniqueCountries.map(country => (
@@ -308,7 +308,7 @@ export default function BondsPage() {
                   <select
                     value={tenorFilter}
                     onChange={(e) => setTenorFilter(e.target.value)}
-                    className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                   >
                     <option value="all">All Tenors</option>
                     {uniqueTenors.map(tenor => (
@@ -318,7 +318,7 @@ export default function BondsPage() {
                   <select
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value)}
-                    className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                   >
                     <option value="all">All Status</option>
                     <option value="active">Active</option>
@@ -411,7 +411,7 @@ export default function BondsPage() {
                               <div className="space-y-1">
                                 <div className="text-xs">
                                   <span className="text-gray-500">Bid: </span>
-                                  <span className="font-medium text-blue-600">{bond.bid_yield}%</span>
+                                  <span className="font-medium text-green-600">{bond.bid_yield}%</span>
                                 </div>
                                 <div className="text-xs">
                                   <span className="text-gray-500">Offer: </span>
@@ -472,7 +472,7 @@ export default function BondsPage() {
                   ).map(([country, count]) => (
                     <div key={country} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                       <span className="text-sm font-medium text-gray-900">{country}</span>
-                      <span className="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
+                      <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
                         {count}
                       </span>
                     </div>

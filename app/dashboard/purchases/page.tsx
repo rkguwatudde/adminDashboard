@@ -581,7 +581,7 @@ export default function PurchasesPage() {
             
             <div className="flex items-center justify-center h-64">
               <div className="text-center">
-                <RefreshCw className="h-8 w-8 animate-spin text-blue-600 mx-auto mb-4" />
+                <RefreshCw className="h-8 w-8 animate-spin text-green-600 mx-auto mb-4" />
                 <p className="text-gray-600">Loading purchases...</p>
               </div>
             </div>
@@ -602,7 +602,7 @@ export default function PurchasesPage() {
                 <h1 className="text-3xl font-bold text-gray-900">Bond Purchases</h1>
                 <p className="text-gray-600">Manage and monitor customer bond purchases</p>
               </div>
-              <Button onClick={fetchPurchases} className="bg-blue-600 hover:bg-blue-700">
+              <Button onClick={fetchPurchases} className="bg-green-600 hover:bg-green-700">
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Retry
               </Button>
@@ -657,7 +657,7 @@ export default function PurchasesPage() {
               }
             }}>
               <DialogTrigger asChild>
-                <Button className="bg-blue-600 hover:bg-blue-700">
+                <Button className="bg-green-600 hover:bg-green-700">
                   <Plus className="h-4 w-4 mr-2" />
                   Create Purchase
                 </Button>
@@ -791,7 +791,7 @@ export default function PurchasesPage() {
                     type="submit" 
                     onClick={handleCreatePurchase}
                     disabled={createLoading || !createForm.userProfileId || !createForm.availableBondId || createForm.amount <= 0}
-                    className="bg-blue-600 hover:bg-blue-700"
+                    className="bg-green-600 hover:bg-green-700"
                   >
                     {createLoading ? (
                       <>
@@ -881,7 +881,7 @@ export default function PurchasesPage() {
                   <select
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value)}
-                    className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                   >
                     <option value="all">All Status</option>
                     <option value="true">Active</option>
@@ -890,7 +890,7 @@ export default function PurchasesPage() {
                   <select
                     value={customerFilter}
                     onChange={(e) => setCustomerFilter(e.target.value)}
-                    className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                   >
                     <option value="all">All Customers</option>
                     {uniqueCustomers.map(customerId => {
@@ -990,7 +990,7 @@ export default function PurchasesPage() {
                                 <div className="text-xs">
                                   <span className="text-gray-500">Net: </span>
                                   <span className={`font-medium ${
-                                    purchase.net_income >= 0 ? 'text-blue-600' : 'text-red-600'
+                                    purchase.net_income >= 0 ? 'text-green-600' : 'text-red-600'
                                   }`}>
                                     {formatCurrency(purchase.net_income, purchase.available_bonds.currency)}
                                   </span>
@@ -1051,7 +1051,7 @@ export default function PurchasesPage() {
                   ).map(([customerName, count]) => (
                     <div key={customerName} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                       <span className="text-sm font-medium text-gray-900">{customerName}</span>
-                      <span className="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
+                      <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
                         {count}
                       </span>
                     </div>

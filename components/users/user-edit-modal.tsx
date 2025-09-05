@@ -170,7 +170,7 @@ export function UserEditModal({ isOpen, onClose, user, onUserUpdated }: UserEdit
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <User className="h-5 w-5 text-blue-600" />
+              <User className="h-5 w-5 text-green-600" />
               Basic Information
             </CardTitle>
           </CardHeader>
@@ -222,7 +222,7 @@ export function UserEditModal({ isOpen, onClose, user, onUserUpdated }: UserEdit
               <select
                 value={formData.user_type || 'customer'}
                 onChange={(e) => handleInputChange('user_type', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
               >
                 <option value="customer">Customer</option>
                 <option value="admin">Admin</option>
@@ -245,7 +245,7 @@ export function UserEditModal({ isOpen, onClose, user, onUserUpdated }: UserEdit
               <select
                 value={formData.status || 'pending'}
                 onChange={(e) => handleInputChange('status', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
               >
                 <option value="pending">Pending</option>
                 <option value="active">Active</option>
@@ -257,7 +257,7 @@ export function UserEditModal({ isOpen, onClose, user, onUserUpdated }: UserEdit
               <select
                 value={formData.verification_status || 'pending'}
                 onChange={(e) => handleInputChange('verification_status', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
               >
                 <option value="pending">Pending</option>
                 <option value="verified">Verified</option>
@@ -280,7 +280,7 @@ export function UserEditModal({ isOpen, onClose, user, onUserUpdated }: UserEdit
                   type="checkbox"
                   checked={formData.onboarding_completed || false}
                   onChange={(e) => handleInputChange('onboarding_completed', e.target.checked)}
-                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  className="rounded border-gray-300 text-green-600 focus:ring-green-500"
                 />
                 <span className="text-sm font-medium text-gray-700">Onboarding Completed</span>
               </label>
@@ -310,7 +310,7 @@ export function UserEditModal({ isOpen, onClose, user, onUserUpdated }: UserEdit
               <select
                 value={formData.gender || ''}
                 onChange={(e) => handleInputChange('gender', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
               >
                 <option value="">Select gender</option>
                 <option value="male">Male</option>
@@ -323,7 +323,7 @@ export function UserEditModal({ isOpen, onClose, user, onUserUpdated }: UserEdit
               <select
                 value={formData.marital_status || ''}
                 onChange={(e) => handleInputChange('marital_status', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
               >
                 <option value="">Select marital status</option>
                 <option value="single">Single</option>
@@ -337,7 +337,7 @@ export function UserEditModal({ isOpen, onClose, user, onUserUpdated }: UserEdit
               <select
                 value={formData.employment_status || ''}
                 onChange={(e) => handleInputChange('employment_status', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
               >
                 <option value="">Select employment status</option>
                 <option value="employed">Employed</option>
@@ -453,7 +453,7 @@ export function UserEditModal({ isOpen, onClose, user, onUserUpdated }: UserEdit
           <Button
             type="submit"
             disabled={loading}
-            className="bg-blue-600 hover:bg-blue-700"
+            className="bg-green-600 hover:bg-green-700"
           >
             {loading ? (
               <>

@@ -44,4 +44,4 @@ AUTH_MIDDLEWARE_README.md
 dashboard.md
 *.DS_Store
 *.md
-
+.next/
