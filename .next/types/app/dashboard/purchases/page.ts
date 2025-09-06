@@ -1,4 +1,4 @@
-// File: /Users/kevin/Documents/projects/frontend/borabond/borabond/dashboard/app/dashboard/purchases/page.tsx
+// File: /Users/kevin/Documents/projects/frontend/borabond/adminDashboard/adminDashboard/app/dashboard/purchases/page.tsx
 import * as entry from '../../../../../app/dashboard/purchases/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

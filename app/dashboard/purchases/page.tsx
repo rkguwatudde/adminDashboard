@@ -210,17 +210,13 @@ export default function PurchasesPage() {
   const [nextPaymentDate, setNextPaymentDate] = useState<string | null>(null)
   const [nextPaymentLoading, setNextPaymentLoading] = useState(false)
 
-  // Fetch customer bond purchases
+  // Fetch all bond purchases
   const fetchPurchases = async () => {
     try {
       setLoading(true)
       setError(null)
       
-      // For demo purposes, using a sample customer ID
-      // In production, this would come from user context or URL params
-      const customerId = "3f2d4d16-4e44-42f5-bd6e-a9689206d581"
-      
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:9000'}/api/bonds/purchases/${customerId}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:9000'}/api/bonds/purchases`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -245,7 +241,7 @@ export default function PurchasesPage() {
         if (err.message.includes('Failed to fetch') || err.message.includes('NetworkError')) {
           errorMessage = 'Network Error: Unable to connect to the backend server. Please ensure:\n\n' +
             '1. The backend server is running on http://localhost:9000\n' +
-            '2. The API endpoint /api/bonds/purchases/{customerId} is accessible\n' +
+            '2. The API endpoint /api/bonds/purchases is accessible\n' +
             '3. CORS is properly configured'
         } else {
           errorMessage = err.message
@@ -347,9 +343,8 @@ export default function PurchasesPage() {
   const fetchNextPaymentDate = async () => {
     try {
       setNextPaymentLoading(true)
-      const customerId = "3f2d4d16-4e44-42f5-bd6e-a9689206d581"
       
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:9000'}/api/bonds/purchases/${customerId}/next-payment`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:9000'}/api/bonds/purchases/next-payment`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',

@@ -1,10 +1,10 @@
 {
   "/_not-found": "app/_not-found.js",
-  "/dashboard/purchases/page": "app/dashboard/purchases/page.js",
-  "/dashboard/bonds/page": "app/dashboard/bonds/page.js",
   "/dashboard/page": "app/dashboard/page.js",
+  "/dashboard/users/page": "app/dashboard/users/page.js",
+  "/dashboard/bonds/page": "app/dashboard/bonds/page.js",
   "/page": "app/page.js",
   "/login/page": "app/login/page.js",
-  "/dashboard/users/page": "app/dashboard/users/page.js",
+  "/dashboard/purchases/page": "app/dashboard/purchases/page.js",
   "/dashboard/ledger/page": "app/dashboard/ledger/page.js"
 }

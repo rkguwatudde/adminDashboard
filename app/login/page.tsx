@@ -20,7 +20,7 @@ export default function LoginPage() {
     setError('')
     setSuccess('')
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://admindashboard-service.onrender.com'}/api/admin/login`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:9000'}/api/admin/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
