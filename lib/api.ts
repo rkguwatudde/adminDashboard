@@ -50,6 +50,33 @@ class ApiService {
   }
 
   /**
+   * Get authentication token from localStorage
+   */
+  private getAuthToken(): string | null {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('adminToken')
+    }
+    return null
+  }
+
+  /**
+   * Check if user is authenticated
+   */
+  isAuthenticated(): boolean {
+    return this.getAuthToken() !== null
+  }
+
+  /**
+   * Clear authentication token
+   */
+  clearAuth(): void {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('adminToken')
+      localStorage.removeItem('adminUser')
+    }
+  }
+
+  /**
    * Make a generic API request
    */
   private async request<T>(
@@ -59,10 +86,14 @@ class ApiService {
     // Simplified URL construction
     const url = this.baseURL + endpoint
     
+    // Get authentication token
+    const token = this.getAuthToken()
+    
     const config: RequestInit = {
       ...options,
       headers: {
         ...this.defaultHeaders,
+        ...(token && { Authorization: `Bearer ${token}` }),
         ...options.headers,
       },
       signal: AbortSignal.timeout(this.timeout),
@@ -85,6 +116,15 @@ class ApiService {
 
       // Handle non-2xx responses
       if (!response.ok) {
+        // Handle authentication errors
+        if (response.status === 401) {
+          this.clearAuth()
+          // Redirect to login page if not already there
+          if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
+            window.location.href = '/login'
+          }
+        }
+        
         throw new ApiError(
           data.message || data.error || `HTTP ${response.status}: ${response.statusText}`,
           response.status,
@@ -325,5 +365,11 @@ export const api = {
 
 // Export the service instance for advanced usage
 export { apiService }
+
+// Export authentication utilities
+export const authUtils = {
+  isAuthenticated: () => apiService.isAuthenticated(),
+  clearAuth: () => apiService.clearAuth(),
+}
 
 // All exports are already declared above

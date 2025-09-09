@@ -29,39 +29,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Check for existing authentication on mount
   useEffect(() => {
-    const checkAuth = async () => {
+    const checkAuth = () => {
       try {
         const storedToken = localStorage.getItem('adminToken')
         const storedUser = localStorage.getItem('adminUser')
 
-        if (storedToken && storedUser) {
-          // Validate token with backend
-          try {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:9000'}/api/admin/validate-token`, {
-              method: 'GET',
-              headers: {
-                'Authorization': `Bearer ${storedToken}`,
-                'Content-Type': 'application/json',
-              },
-            })
 
-            if (response.ok) {
-              const data = await response.json()
-              if (data.success) {
-                setToken(storedToken)
-                setUser(JSON.parse(storedUser))
-              } else {
-                // Token invalid, clear storage
-                localStorage.removeItem('adminToken')
-                localStorage.removeItem('adminUser')
-              }
-            } else {
-              // Token invalid, clear storage
-              localStorage.removeItem('adminToken')
-              localStorage.removeItem('adminUser')
-            }
-          } catch (error) {
-            console.error('Token validation error:', error)
+        if (storedToken && storedUser) {
+          try {
+            // Parse user data first
+            const userData = JSON.parse(storedUser)
+            
+            // Set token and user immediately to avoid redirect loops
+            setToken(storedToken)
+            setUser(userData)
+          } catch (parseError) {
+            console.error('Error parsing stored user data:', parseError)
             // Clear invalid data
             localStorage.removeItem('adminToken')
             localStorage.removeItem('adminUser')
@@ -77,7 +60,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     }
 
-    checkAuth()
+    // Use setTimeout to ensure this runs after the component is mounted
+    setTimeout(checkAuth, 0)
   }, [])
 
   const login = async (email: string, password: string): Promise<boolean> => {
@@ -148,6 +132,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
+
+  const isAuthenticated = !!token && !!user
+
   const value: AuthContextType = {
     user,
     token,
@@ -155,7 +142,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     login,
     logout,
     validateToken,
-    isAuthenticated: !!token && !!user,
+    isAuthenticated,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
