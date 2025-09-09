@@ -10,7 +10,6 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Search, Users, Wallet, ArrowRightLeft, Loader2 } from 'lucide-react'
-import AuthMiddleware from '@/components/auth/AuthMiddleware'
 import { useAuth } from '@/contexts/AuthContext'
 import { useToast } from '@/contexts/ToastContext'
 import { bondApi, cybridApi, ApiError } from '@/lib/api'
@@ -287,7 +286,7 @@ export default function CybridPage() {
   }
 
   return (
-    <AuthMiddleware>
+    
       <DashboardLayout>
         <div className="space-y-6">
           {/* Page Header */}
@@ -518,6 +517,6 @@ export default function CybridPage() {
           </Dialog>
         </div>
       </DashboardLayout>
-    </AuthMiddleware>
+    
   )
 }

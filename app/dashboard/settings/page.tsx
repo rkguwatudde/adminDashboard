@@ -24,7 +24,6 @@ import {
   CheckCircle
 } from 'lucide-react'
 import { DashboardLayout } from '@/components/layout/dashboard-layout'
-import AuthMiddleware from '@/components/auth/AuthMiddleware'
 import { useAuth } from '@/contexts/AuthContext'
 
 interface SettingsData {
@@ -164,7 +163,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <AuthMiddleware>
+    
       <DashboardLayout>
         <div className="space-y-6">
           {/* Header */}
@@ -539,6 +538,6 @@ export default function SettingsPage() {
           </div>
         </div>
       </DashboardLayout>
-    </AuthMiddleware>
+    
   )
 }

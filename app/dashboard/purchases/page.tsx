@@ -12,7 +12,6 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Search, Plus, Calendar, DollarSign, TrendingUp, RefreshCw, AlertCircle, CheckCircle, Clock, User, Building } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
-import AuthMiddleware from '@/components/auth/AuthMiddleware'
 import { useToast } from '@/contexts/ToastContext'
 
 // Types based on the JSON response structures
@@ -564,7 +563,7 @@ export default function PurchasesPage() {
   // Loading state
   if (loading) {
     return (
-      <AuthMiddleware>
+      
         <DashboardLayout>
           <div className="space-y-6">
             <div className="flex items-center justify-between">
@@ -582,14 +581,14 @@ export default function PurchasesPage() {
             </div>
           </div>
         </DashboardLayout>
-      </AuthMiddleware>
+      
     )
   }
 
   // Error state
   if (error) {
     return (
-      <AuthMiddleware>
+      
         <DashboardLayout>
           <div className="space-y-6">
             <div className="flex items-center justify-between">
@@ -617,12 +616,12 @@ export default function PurchasesPage() {
             </Card>
           </div>
         </DashboardLayout>
-      </AuthMiddleware>
+      
     )
   }
 
   return (
-    <AuthMiddleware>
+    
       <DashboardLayout>
         <div className="space-y-6">
           {/* Page Header */}
@@ -1083,6 +1082,6 @@ export default function PurchasesPage() {
           </div>
         </div>
       </DashboardLayout>
-    </AuthMiddleware>
+    
   )
 }

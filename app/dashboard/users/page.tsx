@@ -11,7 +11,6 @@ import { bondApi, ApiError } from '@/lib/api'
 import { UserViewModal } from '@/components/users/user-view-modal'
 import { UserEditModal } from '@/components/users/user-edit-modal'
 import { UserDeleteModal } from '@/components/users/user-delete-modal'
-import AuthMiddleware from '@/components/auth/AuthMiddleware'
 import { useAuth } from '@/contexts/AuthContext'
 
 // Types based on the modal components expectations
@@ -159,7 +158,7 @@ export default function UsersPage() {
   // Loading state
   if (loading) {
     return (
-      <AuthMiddleware>
+      
         <DashboardLayout>
           <div className="space-y-6">
             <div className="flex items-center justify-between">
@@ -177,14 +176,14 @@ export default function UsersPage() {
             </div>
           </div>
         </DashboardLayout>
-      </AuthMiddleware>
+      
     )
   }
 
   // Error state
   if (error) {
     return (
-      <AuthMiddleware>
+      
         <DashboardLayout>
           <div className="space-y-6">
             <div className="flex items-center justify-between">
@@ -212,12 +211,12 @@ export default function UsersPage() {
             </Card>
           </div>
         </DashboardLayout>
-      </AuthMiddleware>
+      
     )
   }
 
   return (
-    <AuthMiddleware>
+    
       <DashboardLayout>
         <div className="space-y-6">
           {/* Page Header */}
@@ -499,6 +498,6 @@ export default function UsersPage() {
           />
         </div>
       </DashboardLayout>
-    </AuthMiddleware>
+    
   )
 }

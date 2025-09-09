@@ -29,26 +29,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Check for existing authentication on mount
   useEffect(() => {
-    const checkAuth = () => {
+    const checkAuth = async () => {
       try {
         const storedToken = localStorage.getItem('adminToken')
         const storedUser = localStorage.getItem('adminUser')
 
 
         if (storedToken && storedUser) {
-          try {
-            // Parse user data first
-            const userData = JSON.parse(storedUser)
-            
-            // Set token and user immediately to avoid redirect loops
-            setToken(storedToken)
-            setUser(userData)
-          } catch (parseError) {
-            console.error('Error parsing stored user data:', parseError)
-            // Clear invalid data
-            localStorage.removeItem('adminToken')
-            localStorage.removeItem('adminUser')
-          }
+          // Set token and user immediately to avoid redirect loops
+          setToken(storedToken)
+          setUser(JSON.parse(storedUser))
+          console.log('AuthContext: Set token and user from localStorage')
+          
+          // Skip token validation for now to prevent redirects
+          // TODO: Re-enable token validation later if needed
+        } else {
+          console.log('AuthContext: No stored token or user found')
         }
       } catch (error) {
         console.error('Error checking authentication:', error)
@@ -56,12 +52,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         localStorage.removeItem('adminToken')
         localStorage.removeItem('adminUser')
       } finally {
+        console.log('AuthContext: Setting isLoading to false')
         setIsLoading(false)
       }
     }
 
-    // Use setTimeout to ensure this runs after the component is mounted
-    setTimeout(checkAuth, 0)
+    checkAuth()
   }, [])
 
   const login = async (email: string, password: string): Promise<boolean> => {
@@ -132,9 +128,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
-
-  const isAuthenticated = !!token && !!user
-
   const value: AuthContextType = {
     user,
     token,
@@ -142,7 +135,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     login,
     logout,
     validateToken,
-    isAuthenticated,
+    isAuthenticated: !!token && !!user,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
