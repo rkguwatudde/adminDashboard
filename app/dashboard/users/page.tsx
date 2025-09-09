@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Search, Filter, Plus, Eye, Edit, Trash2, RefreshCw, AlertCircle, Users, TrendingUp, Calendar, DollarSign } from 'lucide-react'
-import { getEndpointUrl } from '@/lib/config'
+import { bondApi, ApiError } from '@/lib/api'
 import { UserViewModal } from '@/components/users/user-view-modal'
 import { UserEditModal } from '@/components/users/user-edit-modal'
 import { UserDeleteModal } from '@/components/users/user-delete-modal'
@@ -78,30 +78,19 @@ export default function UsersPage() {
       setLoading(true)
       setError(null)
       
-      const apiUrl = getEndpointUrl('USERS')
+      const response = await bondApi.getCustomers()
       
-      const response = await fetch(apiUrl, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      })
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
-      }
-      
-      const data: ApiResponse = await response.json()
-      
-      if (data.success) {
-        setUsers(data.data)
+      if (response.success) {
+        setUsers(response.data as User[])
       } else {
-        throw new Error('Failed to fetch users')
+        throw new Error(response.message || 'Failed to fetch users')
       }
     } catch (err) {
       let errorMessage = 'An error occurred while fetching users'
       
-      if (err instanceof Error) {
+      if (err instanceof ApiError) {
+        errorMessage = err.message
+      } else if (err instanceof Error) {
         if (err.message.includes('Failed to fetch') || err.message.includes('NetworkError')) {
           errorMessage = 'CORS Error: Unable to connect to the backend server. Please ensure:\n\n' +
             '1. The backend server is running on http://localhost:9000\n' +

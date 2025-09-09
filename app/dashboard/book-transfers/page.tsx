@@ -6,10 +6,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Search, Users, Zap, ArrowRightLeft, Loader2 } from 'lucide-react'
+import { Search, Users, Wallet, ArrowRightLeft, Loader2 } from 'lucide-react'
 import AuthMiddleware from '@/components/auth/AuthMiddleware'
 import { useAuth } from '@/contexts/AuthContext'
 import { useToast } from '@/contexts/ToastContext'
@@ -26,14 +26,9 @@ interface Customer {
   total_value?: number
 }
 
-interface TradeFormData {
-  customer_guid: string
-  amount: number
-  symbol: string
-  side: string
-  asset: string
-  product_type: string
-  user_id: string
+interface TransferFormData {
+  receive_amount: number
+  customerGuid: string
 }
 
 interface CustomerIdMapping {
@@ -50,19 +45,14 @@ export default function CybridPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [loading, setLoading] = useState(true)
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null)
-  const [tradeDialogOpen, setTradeDialogOpen] = useState(false)
+  const [transferDialogOpen, setTransferDialogOpen] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [customerIdMappings, setCustomerIdMappings] = useState<CustomerIdMapping[]>([])
   const [fetchingCustomerId, setFetchingCustomerId] = useState(false)
   
-  const [tradeForm, setTradeForm] = useState<TradeFormData>({
-    customer_guid: '',
-    amount: 0,
-    symbol: 'USDC_SOL-USD', // Hardcoded
-    side: 'buy', // Hardcoded
-    asset: 'USDC', // Hardcoded
-    product_type: 'trading',
-    user_id: ''
+  const [transferForm, setTransferForm] = useState<TransferFormData>({
+    receive_amount: 0,
+    customerGuid: ''
   })
 
   // Load customer ID mappings from localStorage on component mount
@@ -162,12 +152,11 @@ export default function CybridPage() {
     if (existingMapping) {
       // Use existing mapping
       setSelectedCustomer(customer)
-      setTradeForm(prev => ({
+      setTransferForm(prev => ({
         ...prev,
-        customer_guid: existingMapping.cybrid_customer_id,
-        user_id: customer.user_id || ''
+        customerGuid: existingMapping.cybrid_customer_id
       }))
-      setTradeDialogOpen(true)
+      setTransferDialogOpen(true)
       return
     }
 
@@ -186,14 +175,13 @@ export default function CybridPage() {
         // Save to local storage
         saveCustomerIdMapping(mapping)
         
-        // Set up trade form
+        // Set up transfer form
         setSelectedCustomer(customer)
-        setTradeForm(prev => ({
+        setTransferForm(prev => ({
           ...prev,
-          customer_guid: data.cybrid_customer_id,
-          user_id: customer.user_id || ''
+          customerGuid: data.cybrid_customer_id
         }))
-        setTradeDialogOpen(true)
+        setTransferDialogOpen(true)
         
         toast({ 
           title: 'Customer ID fetched successfully', 
@@ -231,7 +219,7 @@ export default function CybridPage() {
     }
   }
 
-  const handleTradeSubmit = async (e: React.FormEvent) => {
+  const handleTransferSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
     if (!selectedCustomer) {
@@ -239,43 +227,44 @@ export default function CybridPage() {
       return
     }
 
-    if (tradeForm.amount <= 0) {
+    if (transferForm.receive_amount <= 0) {
       toast({ title: 'Please enter a valid amount', variant: 'destructive' })
       return
     }
 
-    // Note: account_guid and counterparty_guid are now fetched automatically by the backend
+    // Note: source_account_guid is now fetched automatically by the backend
 
     try {
       setSubmitting(true)
       
-      // Log the request payload before sending
-      console.log('🚀 Sending trade request with payload:', JSON.stringify(tradeForm, null, 2))
+      // Add default values for asset and side
+      const requestPayload = {
+        ...transferForm,
+        asset: 'USD',
+        side: 'withdrawal'
+      }
       
-      const response = await cybridApi.createTrade(tradeForm)
+      console.log('🚀 Sending book transfer request with payload:', JSON.stringify(requestPayload, null, 2))
+      
+      const response = await cybridApi.createTransfer(requestPayload)
 
       if (response.success) {
-        toast({ title: 'Trade initiated successfully!', variant: 'success' })
-        setTradeDialogOpen(false)
-        setTradeForm({
-          customer_guid: '',
-          amount: 0,
-          symbol: 'USDC_SOL-USD', // Hardcoded
-          side: 'buy', // Hardcoded
-          asset: 'USDC', // Hardcoded
-          product_type: 'trading',
-          user_id: ''
+        toast({ title: 'Book transfer initiated successfully!', variant: 'success' })
+        setTransferDialogOpen(false)
+        setTransferForm({
+          receive_amount: 0,
+          customerGuid: ''
         })
       } else {
-        throw new Error(response.message || 'Trade failed')
+        throw new Error(response.message || 'Book transfer failed')
       }
     } catch (error) {
-      console.error('Error submitting trade:', error)
+      console.error('Error submitting book transfer:', error)
       
       if (error instanceof ApiError) {
-        toast({ title: `Trade failed: ${error.message}`, variant: 'destructive' })
+        toast({ title: `Book transfer failed: ${error.message}`, variant: 'destructive' })
       } else {
-        toast({ title: `Trade failed: ${error instanceof Error ? error.message : 'Unknown error'}`, variant: 'destructive' })
+        toast({ title: `Book transfer failed: ${error instanceof Error ? error.message : 'Unknown error'}`, variant: 'destructive' })
       }
     } finally {
       setSubmitting(false)
@@ -303,9 +292,9 @@ export default function CybridPage() {
         <div className="space-y-6">
           {/* Page Header */}
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Cybrid Trading</h1>
+            <h1 className="text-3xl font-bold text-gray-900">Cybrid Book Transfers</h1>
             <p className="text-gray-600">
-              Manage customer trades through Cybrid's trading infrastructure.
+              Manage customer book transfers through Cybrid's banking infrastructure.
             </p>
             <div className="mt-2 flex items-center space-x-2">
               <span className="text-sm text-gray-500">Role:</span>
@@ -329,7 +318,7 @@ export default function CybridPage() {
                     Customer Search
                   </CardTitle>
                   <CardDescription>
-                    Search and filter customers to initiate trades
+                    Search and filter customers to initiate book transfers
                   </CardDescription>
                 </div>
                 <Button
@@ -369,7 +358,7 @@ export default function CybridPage() {
                 Customers ({filteredCustomers.length})
               </CardTitle>
               <CardDescription>
-                Click on a customer to initiate a trade
+                Click on a customer to initiate a book transfer
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -407,11 +396,11 @@ export default function CybridPage() {
                         onClick={() => handleCustomerClick(customer)}
                       >
                         <div className="flex items-center space-x-4">
-                          <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                          <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
                             {isFetching ? (
-                              <Loader2 className="h-5 w-5 text-blue-600 animate-spin" />
+                              <Loader2 className="h-5 w-5 text-green-600 animate-spin" />
                             ) : (
-                              <Zap className="h-5 w-5 text-blue-600" />
+                              <Users className="h-5 w-5 text-green-600" />
                             )}
                           </div>
                           <div>
@@ -424,7 +413,7 @@ export default function CybridPage() {
                             <p className="text-sm text-gray-500">{customer.email || 'No email'}</p>
                             <p className="text-xs text-gray-400">ID: {customer.user_id || 'No ID'}</p>
                             {hasCybridId && (
-                              <p className="text-xs text-blue-600 font-medium">
+                              <p className="text-xs text-green-600 font-medium">
                                 ✓ Cybrid ID: {hasCybridId.cybrid_customer_id}
                               </p>
                             )}
@@ -452,64 +441,63 @@ export default function CybridPage() {
             </CardContent>
           </Card>
 
-          {/* Trade Dialog */}
-          <Dialog open={tradeDialogOpen} onOpenChange={setTradeDialogOpen}>
+          {/* Transfer Dialog */}
+          <Dialog open={transferDialogOpen} onOpenChange={setTransferDialogOpen}>
             <DialogContent className="sm:max-w-md">
               <DialogHeader>
                 <DialogTitle className="flex items-center gap-2">
-                  <Zap className="h-5 w-5" />
-                  Initiate Trade
+                  <Wallet className="h-5 w-5" />
+                  Initiate Book Transfer
                 </DialogTitle>
                 <DialogDescription>
-                  Create a trade for {selectedCustomer?.first_name && selectedCustomer?.last_name 
+                  Create a book transfer for {selectedCustomer?.first_name && selectedCustomer?.last_name 
                     ? `${selectedCustomer.first_name} ${selectedCustomer.last_name}`
                     : selectedCustomer?.first_name || selectedCustomer?.last_name || 'this customer'
                   }
-                  {tradeForm.customer_guid && (
-                    <div className="mt-2 text-sm text-blue-600">
-                      ✓ Using Cybrid Customer ID: {tradeForm.customer_guid}
+                  {transferForm.customerGuid && (
+                    <div className="mt-2 text-sm text-green-600">
+                      ✓ Using Cybrid Customer ID: {transferForm.customerGuid}
                     </div>
                   )}
                 </DialogDescription>
               </DialogHeader>
               
-              <form onSubmit={handleTradeSubmit} className="space-y-4">
+              <form onSubmit={handleTransferSubmit} className="space-y-4">
                 <div>
-                  <Label htmlFor="amount">Amount</Label>
+                  <Label htmlFor="receive_amount">Amount</Label>
                   <Input
-                    id="amount"
+                    id="receive_amount"
                     type="number"
                     step="0.01"
                     min="0"
                     placeholder="Enter amount"
-                    value={tradeForm.amount || ''}
-                    onChange={(e) => setTradeForm(prev => ({
+                    value={transferForm.receive_amount || ''}
+                    onChange={(e) => setTransferForm(prev => ({
                       ...prev,
-                      amount: parseFloat(e.target.value) || 0
+                      receive_amount: parseFloat(e.target.value) || 0
                     }))}
                     required
                   />
                 </div>
 
-                {/* Account GUIDs are now fetched automatically by the backend */}
-                <div className="text-sm text-gray-500 bg-blue-50 p-3 rounded-md">
-                  <p><strong>Account GUIDs:</strong> Automatically fetched from customer's Cybrid accounts</p>
-                  <p className="text-xs text-gray-400 mt-1">Trading account and fiat account GUIDs are retrieved dynamically</p>
+                {/* Source Account GUID is now fetched automatically by the backend */}
+                <div className="text-sm text-gray-500 bg-green-50 p-3 rounded-md">
+                  <p><strong>Source Account GUID:</strong> Automatically fetched from customer's fiat account</p>
+                  <p className="text-xs text-gray-400 mt-1">The fiat account GUID is retrieved dynamically from Cybrid</p>
                 </div>
 
-                {/* Hardcoded values - not shown to user */}
-                <div className="text-sm text-gray-500 bg-gray-50 p-3 rounded-md">
-                  <p><strong>Symbol:</strong> USDC_SOL-USD</p>
-                  <p><strong>Side:</strong> Buy</p>
-                  <p><strong>Asset:</strong> USDC</p>
-                  <p className="text-xs text-gray-400 mt-1">These values are automatically set for all trades</p>
+                {/* Asset and Side are now set as default values */}
+                <div className="text-sm text-gray-500 bg-blue-50 p-3 rounded-md">
+                  <p><strong>Asset:</strong> USD (automatically set)</p>
+                  <p><strong>Side:</strong> Withdrawal (automatically set)</p>
+                  <p className="text-xs text-gray-400 mt-1">These values are automatically configured for all book transfers</p>
                 </div>
 
                 <div className="flex justify-end space-x-2 pt-4">
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={() => setTradeDialogOpen(false)}
+                    onClick={() => setTransferDialogOpen(false)}
                     disabled={submitting}
                   >
                     Cancel
@@ -521,7 +509,7 @@ export default function CybridPage() {
                         Processing...
                       </>
                     ) : (
-                      'Initiate Trade'
+                      'Initiate Book Transfer'
                     )}
                   </Button>
                 </div>
