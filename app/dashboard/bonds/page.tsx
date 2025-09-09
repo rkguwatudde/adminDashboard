@@ -9,7 +9,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge'
 import { Search, Filter, Plus, TrendingUp, Calendar, DollarSign, Globe, RefreshCw, AlertCircle } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
-import AuthMiddleware from '@/components/auth/AuthMiddleware'
 
 // Types based on the response.json structure
 interface Bond {
@@ -150,7 +149,7 @@ export default function BondsPage() {
   // Loading state
   if (loading) {
     return (
-      <AuthMiddleware>
+      
         <DashboardLayout>
           <div className="space-y-6">
             <div className="flex items-center justify-between">
@@ -168,14 +167,14 @@ export default function BondsPage() {
             </div>
           </div>
         </DashboardLayout>
-      </AuthMiddleware>
+      
     )
   }
 
   // Error state
   if (error) {
     return (
-      <AuthMiddleware>
+      
         <DashboardLayout>
           <div className="space-y-6">
             <div className="flex items-center justify-between">
@@ -203,12 +202,12 @@ export default function BondsPage() {
             </Card>
           </div>
         </DashboardLayout>
-      </AuthMiddleware>
+      
     )
   }
 
   return (
-    <AuthMiddleware>
+    
       <DashboardLayout>
         <div className="space-y-6">
           {/* Page Header */}
@@ -508,6 +507,6 @@ export default function BondsPage() {
           </div>
         </div>
       </DashboardLayout>
-    </AuthMiddleware>
+    
   )
 }

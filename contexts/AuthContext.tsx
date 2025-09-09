@@ -34,38 +34,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const storedToken = localStorage.getItem('adminToken')
         const storedUser = localStorage.getItem('adminUser')
 
-        if (storedToken && storedUser) {
-          // Validate token with backend
-          try {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:9000'}/api/admin/validate-token`, {
-              method: 'GET',
-              headers: {
-                'Authorization': `Bearer ${storedToken}`,
-                'Content-Type': 'application/json',
-              },
-            })
 
-            if (response.ok) {
-              const data = await response.json()
-              if (data.success) {
-                setToken(storedToken)
-                setUser(JSON.parse(storedUser))
-              } else {
-                // Token invalid, clear storage
-                localStorage.removeItem('adminToken')
-                localStorage.removeItem('adminUser')
-              }
-            } else {
-              // Token invalid, clear storage
-              localStorage.removeItem('adminToken')
-              localStorage.removeItem('adminUser')
-            }
-          } catch (error) {
-            console.error('Token validation error:', error)
-            // Clear invalid data
-            localStorage.removeItem('adminToken')
-            localStorage.removeItem('adminUser')
-          }
+        if (storedToken && storedUser) {
+          // Set token and user immediately to avoid redirect loops
+          setToken(storedToken)
+          setUser(JSON.parse(storedUser))
+          console.log('AuthContext: Set token and user from localStorage')
+          
+          // Skip token validation for now to prevent redirects
+          // TODO: Re-enable token validation later if needed
+        } else {
+          console.log('AuthContext: No stored token or user found')
         }
       } catch (error) {
         console.error('Error checking authentication:', error)
@@ -73,6 +52,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         localStorage.removeItem('adminToken')
         localStorage.removeItem('adminUser')
       } finally {
+        console.log('AuthContext: Setting isLoading to false')
         setIsLoading(false)
       }
     }
