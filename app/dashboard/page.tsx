@@ -180,6 +180,7 @@ export default function DashboardPage() {
   useEffect(() => {
     const fetchMetrics = async () => {
       try {
+        console.log('Dashboard: Starting to fetch metrics')
         setMetrics(prev => ({ ...prev, loading: true, error: null }))
         
         // Fetch all data in parallel
@@ -188,6 +189,12 @@ export default function DashboardPage() {
           bondApi.getBonds(),
           bondApi.getPurchases()
         ])
+        
+        console.log('Dashboard: API responses received', {
+          customers: customersResponse,
+          bonds: bondsResponse,
+          purchases: purchasesResponse
+        })
 
         if (customersResponse.success && bondsResponse.success && purchasesResponse.success) {
           const customers = Array.isArray(customersResponse.data) ? customersResponse.data : []
@@ -219,7 +226,7 @@ export default function DashboardPage() {
           throw new Error('Failed to fetch dashboard data')
         }
       } catch (error) {
-        console.error('Error fetching dashboard metrics:', error)
+        console.error('Dashboard: Error fetching metrics:', error)
         setMetrics(prev => ({
           ...prev,
           loading: false,
@@ -289,43 +296,43 @@ export default function DashboardPage() {
   }
 
   // Create stats array with dynamic data
-const stats = [
-  {
-    title: 'Total Users',
+  const stats = [
+    {
+      title: 'Total Users',
       value: metrics.loading ? '...' : metrics.totalUsers.toLocaleString(),
-    change: '+12%',
+      change: '+12%',
       changeType: 'positive' as 'positive' | 'negative' | 'neutral',
-    icon: Users,
-    color: 'text-green-600'
-  },
-  {
-    title: 'Active Bonds',
+      icon: Users,
+      color: 'text-green-600'
+    },
+    {
+      title: 'Active Bonds',
       value: metrics.loading ? '...' : metrics.activeBonds.toLocaleString(),
-    change: '+8%',
+      change: '+8%',
       changeType: 'positive' as 'positive' | 'negative' | 'neutral',
-    icon: TrendingUp,
-    color: 'text-green-600'
-  },
-  {
-    title: 'Total Purchases',
+      icon: TrendingUp,
+      color: 'text-green-600'
+    },
+    {
+      title: 'Total Purchases',
       value: metrics.loading ? '...' : metrics.totalPurchases.toLocaleString(),
-    change: '+23%',
+      change: '+23%',
       changeType: 'positive' as 'positive' | 'negative' | 'neutral',
-    icon: ShoppingCart,
-    color: 'text-purple-600'
-  },
-  {
-    title: 'Next Payments',
-    value: '$2.1M',
-    change: 'Due in 7 days',
+      icon: ShoppingCart,
+      color: 'text-purple-600'
+    },
+    {
+      title: 'Next Payments',
+      value: '$2.1M',
+      change: 'Due in 7 days',
       changeType: 'neutral' as 'positive' | 'negative' | 'neutral',
-    icon: Calendar,
-    color: 'text-orange-600'
-  }
-]
+      icon: Calendar,
+      color: 'text-orange-600'
+    }
+  ]
 
   return (
-      <DashboardLayout>
+    <DashboardLayout>
         <div className="space-y-6">
           {/* Page Header */}
           <div>
@@ -356,7 +363,7 @@ const stats = [
                 {metrics.loading ? (
                   <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
                 ) : (
-                <stat.icon className={`h-4 w-4 ${stat.color}`} />
+                  <stat.icon className={`h-4 w-4 ${stat.color}`} />
                 )}
               </CardHeader>
               <CardContent>
@@ -373,13 +380,13 @@ const stats = [
                   )}
                 </div>
                 {!metrics.loading && !metrics.error && (
-                <p className={`text-xs ${
-                  stat.changeType === 'positive' ? 'text-green-600' : 
+                  <p className={`text-xs ${
+                    stat.changeType === 'positive' ? 'text-green-600' : 
                     stat.changeType === 'negative' ? 'text-red-600' : 
                     stat.changeType === 'neutral' ? 'text-gray-600' : 'text-gray-600'
-                }`}>
-                  {stat.change}
-                </p>
+                  }`}>
+                    {stat.change}
+                  </p>
                 )}
                 {metrics.error && (
                   <p className="text-xs text-red-500">
@@ -408,9 +415,9 @@ const stats = [
                   </div>
                 </div>
               ) : bondPerformanceData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={300}>
+                <ResponsiveContainer width="100%" height={300}>
                   <BarChart data={bondPerformanceData}>
-                  <CartesianGrid strokeDasharray="3 3" />
+                    <CartesianGrid strokeDasharray="3 3" />
                     <XAxis 
                       dataKey="name" 
                       angle={-45} 
@@ -441,7 +448,7 @@ const stats = [
                     />
                     <Bar dataKey="value" fill="#3B82F6" name="Available Amount" />
                   </BarChart>
-              </ResponsiveContainer>
+                </ResponsiveContainer>
               ) : (
                 <div className="flex items-center justify-center h-[300px] text-gray-500">
                   No bond data available
@@ -465,11 +472,11 @@ const stats = [
                   </div>
                 </div>
               ) : userActivityData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={userActivityData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={userActivityData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
                     <Tooltip 
                       formatter={(value: any, name: string) => [
                         value,
@@ -479,8 +486,8 @@ const stats = [
                     />
                     <Bar dataKey="users" fill="#3B82F6" name="New User Registrations" />
                     <Bar dataKey="purchases" fill="#10B981" name="New Purchases" />
-                </BarChart>
-              </ResponsiveContainer>
+                  </BarChart>
+                </ResponsiveContainer>
               ) : (
                 <div className="flex items-center justify-center h-[300px] text-gray-500">
                   No activity data available
@@ -518,13 +525,13 @@ const stats = [
 
         {/* Bond Distribution and Recent Activity - Side by Side */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Bond Types Distribution */}
-        <Card>
-          <CardHeader>
+          {/* Bond Types Distribution */}
+          <Card>
+            <CardHeader>
               <CardTitle>Bond Distribution by Country</CardTitle>
               <CardDescription>Current allocation across different countries</CardDescription>
-          </CardHeader>
-          <CardContent>
+            </CardHeader>
+            <CardContent>
               {chartsLoading ? (
                 <div className="flex items-center justify-center h-[300px]">
                   <div className="flex items-center space-x-2">
@@ -533,44 +540,44 @@ const stats = [
                   </div>
                 </div>
               ) : bondTypesData.length > 0 ? (
-            <div className="flex items-center justify-center">
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={bondTypesData}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {bondTypesData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
+                <div className="flex items-center justify-center">
+                  <ResponsiveContainer width="100%" height={300}>
+                    <PieChart>
+                      <Pie
+                        data={bondTypesData}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                        outerRadius={80}
+                        fill="#8884d8"
+                        dataKey="value"
+                      >
+                        {bondTypesData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
                       <Tooltip 
                         formatter={(value: any) => [`${value} bonds`, 'Count']}
                       />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
               ) : (
                 <div className="flex items-center justify-center h-[300px] text-gray-500">
                   No distribution data available
                 </div>
               )}
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        {/* Recent Activity */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
-            <CardDescription>Latest transactions and updates</CardDescription>
-          </CardHeader>
-          <CardContent>
+          {/* Recent Activity */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Recent Activity</CardTitle>
+              <CardDescription>Latest transactions and updates</CardDescription>
+            </CardHeader>
+            <CardContent>
               {activityLoading ? (
                 <div className="flex items-center justify-center h-[200px]">
                   <div className="flex items-center space-x-2">
@@ -579,27 +586,27 @@ const stats = [
                   </div>
                 </div>
               ) : recentActivity.length > 0 ? (
-            <div className="space-y-4">
+                <div className="space-y-4">
                   {recentActivity.slice(0, 6).map((activity, index) => (
                     <div key={activity.entity_id || index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <div className="flex items-center space-x-3">
+                      <div className="flex items-center space-x-3">
                         <div className={`text-lg ${getActivityColor(activity.type)}`}>
                           {getActivityIcon(activity.type)}
                         </div>
-                    <div>
+                        <div>
                           <p className="text-sm font-medium text-gray-900">{activity.message}</p>
                           <p className="text-xs text-gray-500">
                             {activity.type.charAt(0).toUpperCase() + activity.type.slice(1)} activity
                           </p>
-                    </div>
-                  </div>
-                  <div className="text-right">
+                        </div>
+                      </div>
+                      <div className="text-right">
                         <p className="text-xs text-gray-500">{formatTimeAgo(activity.created_at)}</p>
                         <p className="text-xs text-gray-400">ID: {activity.entity_id.slice(0, 8)}...</p>
-                  </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
               ) : (
                 <div className="flex items-center justify-center h-[200px] text-gray-500">
                   <div className="text-center">
@@ -609,8 +616,8 @@ const stats = [
                   </div>
                 </div>
               )}
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
         </div>
       </div>
       </DashboardLayout>

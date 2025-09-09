@@ -118,11 +118,10 @@ class ApiService {
       if (!response.ok) {
         // Handle authentication errors
         if (response.status === 401) {
+          console.log('API: 401 error received, but not redirecting to prevent loops')
           this.clearAuth()
-          // Redirect to login page if not already there
-          if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
-            window.location.href = '/login'
-          }
+          // Temporarily disabled redirect to prevent login loops
+          // TODO: Re-enable proper 401 handling later
         }
         
         throw new ApiError(
