@@ -10,7 +10,8 @@ import {
   BookOpen, 
   BarChart3, 
   Settings,
-  LogOut
+  LogOut,
+  Wallet
 } from 'lucide-react'
 
 const navigation = [
@@ -19,6 +20,7 @@ const navigation = [
   { name: 'Bonds', href: '/dashboard/bonds', icon: TrendingUp },
   { name: 'Purchases', href: '/dashboard/purchases', icon: ShoppingCart },
   { name: 'Ledger', href: '/dashboard/ledger', icon: BookOpen },
+  { name: 'Cybrid', href: '/dashboard/cybrid', icon: Wallet },
   { name: 'Reports', href: '/dashboard/reports', icon: BarChart3 },
   { name: 'Settings', href: '/dashboard/settings', icon: Settings },
 ]
