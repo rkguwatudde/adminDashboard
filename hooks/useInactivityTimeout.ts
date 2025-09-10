@@ -39,8 +39,8 @@ export function useInactivityTimeout({
     if (!enabled) return
 
     console.log('🕐 InactivityTimeout: Activity detected, resetting timer')
-    lastActivityRef.value = Date.now()
-    isActiveRef.value = true
+    lastActivityRef.current = Date.now()
+    isActiveRef.current = true
 
     // Clear existing timeout
     if (timeoutRef.current) {
@@ -50,7 +50,7 @@ export function useInactivityTimeout({
     // Set new timeout
     timeoutRef.current = setTimeout(() => {
       console.log('⏰ InactivityTimeout: Timeout reached, triggering logout')
-      isActiveRef.value = false
+      isActiveRef.current = false
       onTimeout()
     }, timeout)
   }, [timeout, onTimeout, enabled])
