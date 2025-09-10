@@ -7,8 +7,12 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
 export function Header() {
-  const { user, logout } = useAuth()
+  const { user, logout, isLoading } = useAuth()
   const [showUserMenu, setShowUserMenu] = useState(false)
+
+  // Debug logging
+  console.log('Header: user data:', user)
+  console.log('Header: isLoading:', isLoading)
 
   const handleLogout = () => {
     logout()
@@ -54,12 +58,34 @@ export function Header() {
           <div className="relative">
             <div className="flex items-center space-x-3">
               <div className="text-right">
-                <p className="text-sm font-medium text-gray-900">{user?.email || 'Loading...'}</p>
-                <div className="flex items-center space-x-2">
-                  <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getUserRoleColor(user?.role || '')}`}>
-                    {user?.role || 'Loading...'}
-                  </span>
-                </div>
+                {isLoading ? (
+                  <>
+                    <p className="text-sm font-medium text-gray-900">Loading...</p>
+                    <div className="flex items-center space-x-2">
+                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                        Loading...
+                      </span>
+                    </div>
+                  </>
+                ) : user ? (
+                  <>
+                    <p className="text-sm font-medium text-gray-900">{user.email}</p>
+                    <div className="flex items-center space-x-2">
+                      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getUserRoleColor(user.role)}`}>
+                        {user.role}
+                      </span>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-sm font-medium text-gray-900">Not logged in</p>
+                    <div className="flex items-center space-x-2">
+                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                        No User
+                      </span>
+                    </div>
+                  </>
+                )}
               </div>
               <Button 
                 variant="ghost" 
@@ -74,7 +100,7 @@ export function Header() {
 
             {/* User Dropdown Menu */}
             <AnimatePresence>
-              {showUserMenu && (
+              {showUserMenu && user && (
                 <motion.div
                   initial={{ opacity: 0, y: -10, scale: 0.95 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -83,8 +109,8 @@ export function Header() {
                   className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200 py-1 z-50"
                 >
                   <div className="px-4 py-2 border-b border-gray-100">
-                    <p className="text-sm font-medium text-gray-900">{user?.email}</p>
-                    <p className="text-xs text-gray-500 capitalize">{user?.role?.toLowerCase()}</p>
+                    <p className="text-sm font-medium text-gray-900">{user.email}</p>
+                    <p className="text-xs text-gray-500 capitalize">{user.role.toLowerCase()}</p>
                   </div>
                   <button
                     onClick={handleLogout}
