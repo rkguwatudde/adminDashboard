@@ -14,9 +14,11 @@ interface AuthContextType {
   token: string | null
   isLoading: boolean
   login: (email: string, password: string) => Promise<boolean>
-  logout: () => void
+  logout: (reason?: string) => void
   validateToken: (token: string) => Promise<boolean>
   isAuthenticated: boolean
+  lastActivity: number
+  updateLastActivity: () => void
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -25,33 +27,50 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [token, setToken] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [lastActivity, setLastActivity] = useState<number>(Date.now())
   const router = useRouter()
 
   // Check for existing authentication on mount
   useEffect(() => {
     const checkAuth = async () => {
       try {
+        console.log('AuthContext: Checking authentication...')
+        
+        // Check for cookies first (preferred method)
+        const cookies = document.cookie.split(';').reduce((acc, cookie) => {
+          const [key, value] = cookie.trim().split('=')
+          acc[key] = value
+          return acc
+        }, {} as Record<string, string>)
+
+        const cookieToken = cookies['adminToken']
+        const cookieUser = cookies['adminUser']
+
+        // Fallback to localStorage for backward compatibility
         const storedToken = localStorage.getItem('adminToken')
         const storedUser = localStorage.getItem('adminUser')
 
-        console.log('AuthContext: Checking stored data...')
-        console.log('Stored token:', storedToken ? 'exists' : 'missing')
-        console.log('Stored user:', storedUser ? 'exists' : 'missing')
+        const token = cookieToken || storedToken
+        const userData = cookieUser || storedUser
 
-        if (storedToken && storedUser) {
+        console.log('AuthContext: Cookie token:', cookieToken ? 'exists' : 'missing')
+        console.log('AuthContext: Cookie user:', cookieUser ? 'exists' : 'missing')
+        console.log('AuthContext: LocalStorage token:', storedToken ? 'exists' : 'missing')
+        console.log('AuthContext: LocalStorage user:', storedUser ? 'exists' : 'missing')
+
+        if (token && userData) {
           try {
-            const parsedUser = JSON.parse(storedUser)
+            const parsedUser = JSON.parse(decodeURIComponent(userData))
             console.log('AuthContext: Parsed user data:', parsedUser)
             
             // Set token and user immediately to avoid redirect loops
-            setToken(storedToken)
+            setToken(token)
             setUser(parsedUser)
-            console.log('AuthContext: Set token and user from localStorage')
+            console.log('AuthContext: Set token and user from storage')
           } catch (parseError) {
             console.error('AuthContext: Error parsing stored user data:', parseError)
             // Clear invalid data
-            localStorage.removeItem('adminToken')
-            localStorage.removeItem('adminUser')
+            clearAuthData()
           }
           
           // Skip token validation for now to prevent redirects
@@ -62,8 +81,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } catch (error) {
         console.error('Error checking authentication:', error)
         // Clear invalid data
-        localStorage.removeItem('adminToken')
-        localStorage.removeItem('adminUser')
+        clearAuthData()
       } finally {
         console.log('AuthContext: Setting isLoading to false')
         setIsLoading(false)
@@ -72,6 +90,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     checkAuth()
   }, [])
+
+  // Helper function to clear authentication data
+  const clearAuthData = () => {
+    localStorage.removeItem('adminToken')
+    localStorage.removeItem('adminUser')
+    // Clear cookies
+    document.cookie = 'adminToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'
+    document.cookie = 'adminUser=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'
+  }
 
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
@@ -94,9 +121,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         console.log('AuthContext: Login successful, user data:', userData)
         console.log('AuthContext: Token received:', userToken ? 'yes' : 'no')
 
-        // Store in localStorage
+        // Store in both cookies and localStorage for compatibility
+        const userDataString = JSON.stringify(userData)
+        
+        // Set httpOnly cookies (more secure)
+        document.cookie = `adminToken=${userToken}; path=/; max-age=${7 * 24 * 60 * 60}; secure; samesite=strict`
+        document.cookie = `adminUser=${encodeURIComponent(userDataString)}; path=/; max-age=${7 * 24 * 60 * 60}; secure; samesite=strict`
+        
+        // Also store in localStorage for backward compatibility
         localStorage.setItem('adminToken', userToken)
-        localStorage.setItem('adminUser', JSON.stringify(userData))
+        localStorage.setItem('adminUser', userDataString)
 
         // Update state
         setToken(userToken)
@@ -114,17 +148,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  const logout = () => {
-    // Clear localStorage
-    localStorage.removeItem('adminToken')
-    localStorage.removeItem('adminUser')
+  const updateLastActivity = () => {
+    const now = Date.now()
+    setLastActivity(now)
+    
+    // Also update server-side last activity if authenticated
+    if (token && user) {
+      // Send activity update to server (non-blocking)
+      fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:9000'}/api/admin/update-activity`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ lastActivity: now })
+      }).catch(error => {
+        console.warn('Failed to update server activity:', error)
+      })
+    }
+  }
+
+  const logout = (reason?: string) => {
+    console.log('AuthContext: Logging out user', reason ? `- Reason: ${reason}` : '')
+    
+    // Clear authentication data
+    clearAuthData()
 
     // Clear state
     setToken(null)
     setUser(null)
+    setLastActivity(Date.now())
 
-    // Redirect to login
-    router.push('/login')
+    // Redirect to login with reason if provided
+    const loginUrl = reason ? `/login?reason=${encodeURIComponent(reason)}` : '/login'
+    router.push(loginUrl)
   }
 
   const validateToken = async (token: string): Promise<boolean> => {
@@ -156,6 +213,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     logout,
     validateToken,
     isAuthenticated: !!token && !!user,
+    lastActivity,
+    updateLastActivity,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

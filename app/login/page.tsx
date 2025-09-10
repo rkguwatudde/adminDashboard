@@ -1,19 +1,54 @@
 "use client"
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { Eye, EyeOff, Mail, Lock, ArrowRight } from 'lucide-react'
 import { motion } from 'framer-motion'
 
 export default function LoginPage() {
   const router = useRouter()
-  const { login } = useAuth()
+  const searchParams = useSearchParams()
+  const { login, isAuthenticated } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
+
+  // Get redirect URL and messages from query parameters
+  const redirectUrl = searchParams.get('redirect') || '/dashboard'
+  const message = searchParams.get('message')
+  const reason = searchParams.get('reason')
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      console.log('LoginPage: User already authenticated, redirecting to:', redirectUrl)
+      router.push(redirectUrl)
+    }
+  }, [isAuthenticated, redirectUrl, router])
+
+  // Get display message based on query parameters
+  const getDisplayMessage = () => {
+    if (message === 'session-expired') {
+      return {
+        type: 'warning' as const,
+        title: 'Session Expired',
+        message: 'Your session has expired due to inactivity. Please log in again.'
+      }
+    }
+    if (reason) {
+      return {
+        type: 'info' as const,
+        title: 'Logged Out',
+        message: decodeURIComponent(reason)
+      }
+    }
+    return null
+  }
+
+  const displayMessage = getDisplayMessage()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -24,8 +59,9 @@ export default function LoginPage() {
       const success = await login(email, password)
       
       if (success) {
-        // Login successful, redirect to dashboard
-        router.push('/dashboard')
+        // Login successful, redirect to the intended URL
+        console.log('LoginPage: Login successful, redirecting to:', redirectUrl)
+        router.push(redirectUrl)
       } else {
         setError('Invalid email or password. Please try again.')
       }
@@ -62,6 +98,22 @@ export default function LoginPage() {
               className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6"
             >
               {error}
+            </motion.div>
+          )}
+
+          {/* Session Message */}
+          {displayMessage && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className={`${
+                displayMessage.type === 'warning' 
+                  ? 'bg-yellow-50 border border-yellow-200 text-yellow-700' 
+                  : 'bg-blue-50 border border-blue-200 text-blue-700'
+              } px-4 py-3 rounded-lg mb-6`}
+            >
+              <div className="font-medium">{displayMessage.title}</div>
+              <div className="text-sm mt-1">{displayMessage.message}</div>
             </motion.div>
           )}
 
