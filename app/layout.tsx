@@ -1,3 +1,6 @@
+// Initialize logger first - this must be the very first import
+import '@/lib/init-logger'
+
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
