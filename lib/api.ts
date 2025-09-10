@@ -288,6 +288,17 @@ export const cybridApi = {
   },
 
   /**
+   * Finalize trade (complete remaining steps after trade initiation)
+   */
+  finalizeTrade: (finalizeData: {
+    customer_guid: string
+    user_id: string
+  }) => {
+    console.log('📡 API Service - finalizeTrade called with data:', JSON.stringify(finalizeData, null, 2))
+    return apiService.post('/api/cybrid/trade/finalize', finalizeData)
+  },
+
+  /**
    * Create complete trade flow (trade + Yellowcard + external wallet)
    */
   createTradeWithWallet: (tradeData: {
