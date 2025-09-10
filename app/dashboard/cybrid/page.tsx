@@ -53,6 +53,7 @@ export default function CybridPage() {
   const [submitting, setSubmitting] = useState(false)
   const [customerIdMappings, setCustomerIdMappings] = useState<CustomerIdMapping[]>([])
   const [fetchingCustomerId, setFetchingCustomerId] = useState(false)
+  const [customerActions, setCustomerActions] = useState<Record<string, { initiating: boolean; finalizing: boolean }>>({})
   
   const [tradeForm, setTradeForm] = useState<TradeFormData>({
     customer_guid: '',
@@ -87,6 +88,21 @@ export default function CybridPage() {
   // Get customer ID mapping by user_id
   const getCustomerIdMapping = (userId: string): CustomerIdMapping | undefined => {
     return customerIdMappings.find(mapping => mapping.user_id === userId)
+  }
+
+  // Helper functions for customer actions
+  const setCustomerAction = (userId: string, action: 'initiating' | 'finalizing', value: boolean) => {
+    setCustomerActions(prev => ({
+      ...prev,
+      [userId]: {
+        ...prev[userId],
+        [action]: value
+      }
+    }))
+  }
+
+  const getCustomerAction = (userId: string, action: 'initiating' | 'finalizing'): boolean => {
+    return customerActions[userId]?.[action] || false
   }
 
   // Fetch customers from the API
@@ -281,6 +297,148 @@ export default function CybridPage() {
     }
   }
 
+
+  // Action button handlers for customer rows
+  const handleInitiateTradeFromRow = async (customer: Customer) => {
+    if (!customer.user_id) {
+      toast({ title: 'Customer ID is missing', variant: 'destructive' })
+      return
+    }
+
+    // Check if we already have the customer ID mapping
+    const existingMapping = getCustomerIdMapping(customer.user_id)
+    
+    if (existingMapping) {
+      // Use existing mapping and open dialog
+      setSelectedCustomer(customer)
+      setTradeForm(prev => ({
+        ...prev,
+        customer_guid: existingMapping.cybrid_customer_id,
+        user_id: customer.user_id || ''
+      }))
+      setTradeDialogOpen(true)
+      return
+    }
+
+    // Fetch customer ID from API
+    try {
+      setCustomerAction(customer.user_id, 'initiating', true)
+      const response = await cybridApi.getCustomerId(customer.user_id)
+      
+      if (response.success && response.data) {
+        const data = response.data as { user_id: string; cybrid_customer_id: string }
+        const mapping: CustomerIdMapping = {
+          user_id: data.user_id,
+          cybrid_customer_id: data.cybrid_customer_id
+        }
+        
+        // Save to local storage
+        saveCustomerIdMapping(mapping)
+        
+        // Set up trade form and open dialog
+        setSelectedCustomer(customer)
+        setTradeForm(prev => ({
+          ...prev,
+          customer_guid: data.cybrid_customer_id,
+          user_id: customer.user_id || ''
+        }))
+        setTradeDialogOpen(true)
+        
+        toast({ 
+          title: 'Customer ID fetched successfully', 
+          variant: 'success' 
+        })
+      } else {
+        throw new Error(response.message || 'Failed to fetch customer ID')
+      }
+    } catch (error) {
+      console.error('Error fetching customer ID:', error)
+      
+      if (error instanceof ApiError) {
+        if (error.status === 404) {
+          toast({ 
+            title: 'Customer not found in Cybrid', 
+            description: 'This customer does not have a Cybrid account yet.',
+            variant: 'destructive' 
+          })
+        } else {
+          toast({ 
+            title: 'Error fetching customer ID', 
+            description: error.message,
+            variant: 'destructive' 
+          })
+        }
+      } else {
+        toast({ 
+          title: 'Error fetching customer ID', 
+          description: 'An unexpected error occurred',
+          variant: 'destructive' 
+        })
+      }
+    } finally {
+      setCustomerAction(customer.user_id, 'initiating', false)
+    }
+  }
+
+  const handleFinalizeTradeFromRow = async (customer: Customer) => {
+    if (!customer.user_id) {
+      toast({ title: 'Customer ID is missing', variant: 'destructive' })
+      return
+    }
+
+    // Check if we have the customer ID mapping
+    const existingMapping = getCustomerIdMapping(customer.user_id)
+    
+    if (!existingMapping) {
+      toast({ 
+        title: 'Customer ID not found', 
+        description: 'Please initiate a trade first to fetch the customer ID.',
+        variant: 'destructive' 
+      })
+      return
+    }
+
+    try {
+      setCustomerAction(customer.user_id, 'finalizing', true)
+      
+      const finalizeData = {
+        customer_guid: existingMapping.cybrid_customer_id,
+        user_id: customer.user_id
+      }
+      
+      // Log the request payload before sending
+      console.log('🚀 Sending finalize trade request with payload:', JSON.stringify(finalizeData, null, 2))
+      
+      const response = await cybridApi.finalizeTrade(finalizeData)
+
+      if (response.success) {
+        toast({ 
+          title: 'Trade finalized successfully!', 
+          description: `Trade completed for ${customer.first_name || customer.last_name || 'customer'}`,
+          variant: 'success' 
+        })
+      } else {
+        throw new Error(response.message || 'Trade finalization failed')
+      }
+    } catch (error) {
+      console.error('Error finalizing trade:', error)
+      
+      if (error instanceof ApiError) {
+        toast({ 
+          title: `Trade finalization failed: ${error.message}`, 
+          variant: 'destructive' 
+        })
+      } else {
+        toast({ 
+          title: `Trade finalization failed: ${error instanceof Error ? error.message : 'Unknown error'}`, 
+          variant: 'destructive' 
+        })
+      }
+    } finally {
+      setCustomerAction(customer.user_id, 'finalizing', false)
+    }
+  }
+
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
       case 'verified':
@@ -328,7 +486,7 @@ export default function CybridPage() {
                     Customer Search
                   </CardTitle>
                   <CardDescription>
-                    Search and filter customers to initiate trades
+                    Search and filter customers to access trade actions
                   </CardDescription>
                 </div>
                 <Button
@@ -368,7 +526,7 @@ export default function CybridPage() {
                 Customers ({filteredCustomers.length})
               </CardTitle>
               <CardDescription>
-                Click on a customer to initiate a trade
+                Use action buttons to initiate or finalize trades, or click customer info to open trade dialog
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -398,14 +556,18 @@ export default function CybridPage() {
                   {filteredCustomers.map((customer) => {
                     const hasCybridId = getCustomerIdMapping(customer.user_id || '')
                     const isFetching = fetchingCustomerId && selectedCustomer?.user_id === customer.user_id
+                    const isInitiating = getCustomerAction(customer.user_id || '', 'initiating')
+                    const isFinalizing = getCustomerAction(customer.user_id || '', 'finalizing')
                     
                     return (
                       <div
                         key={customer.user_id}
-                        className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
-                        onClick={() => handleCustomerClick(customer)}
+                        className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
                       >
-                        <div className="flex items-center space-x-4">
+                        <div 
+                          className="flex items-center space-x-4 flex-1 cursor-pointer"
+                          onClick={() => handleCustomerClick(customer)}
+                        >
                           <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
                             {isFetching ? (
                               <Loader2 className="h-5 w-5 text-blue-600 animate-spin" />
@@ -429,6 +591,7 @@ export default function CybridPage() {
                             )}
                           </div>
                         </div>
+                        
                         <div className="flex items-center space-x-4">
                           <div className="text-right">
                             <p className="text-sm font-medium text-gray-900">
@@ -441,7 +604,49 @@ export default function CybridPage() {
                           <Badge className={getStatusColor(customer.verification_status || 'unknown')}>
                             {customer.verification_status || 'unknown'}
                           </Badge>
-                          <ArrowRightLeft className="h-5 w-5 text-gray-400" />
+                          
+                          {/* Action Buttons */}
+                          <div className="flex items-center space-x-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleInitiateTradeFromRow(customer)
+                              }}
+                              disabled={isInitiating || isFinalizing}
+                              className="text-xs px-3 py-1"
+                            >
+                              {isInitiating ? (
+                                <>
+                                  <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                                  Loading...
+                                </>
+                              ) : (
+                                'Initiate Trade'
+                              )}
+                            </Button>
+                            
+                            <Button
+                              size="sm"
+                              variant="default"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleFinalizeTradeFromRow(customer)
+                              }}
+                              disabled={isInitiating || isFinalizing || !hasCybridId}
+                              className="text-xs px-3 py-1"
+                            >
+                              {isFinalizing ? (
+                                <>
+                                  <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                                  Finalizing...
+                                </>
+                              ) : (
+                                'Finalize Trade'
+                              )}
+                            </Button>
+                          </div>
                         </div>
                       </div>
                     )
@@ -460,7 +665,7 @@ export default function CybridPage() {
                   Initiate Trade
                 </DialogTitle>
                 <DialogDescription>
-                  Create a trade for {selectedCustomer?.first_name && selectedCustomer?.last_name 
+                  Create a new trade for {selectedCustomer?.first_name && selectedCustomer?.last_name 
                     ? `${selectedCustomer.first_name} ${selectedCustomer.last_name}`
                     : selectedCustomer?.first_name || selectedCustomer?.last_name || 'this customer'
                   }
@@ -472,25 +677,8 @@ export default function CybridPage() {
                 </DialogDescription>
               </DialogHeader>
               
-              <form onSubmit={handleTradeSubmit} className="space-y-4">
-                <div>
-                  <Label htmlFor="amount">Amount</Label>
-                  <Input
-                    id="amount"
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    placeholder="Enter amount"
-                    value={tradeForm.amount || ''}
-                    onChange={(e) => setTradeForm(prev => ({
-                      ...prev,
-                      amount: parseFloat(e.target.value) || 0
-                    }))}
-                    required
-                  />
-                </div>
-
-                {/* Account GUIDs are now fetched automatically by the backend */}
+              <div className="space-y-4">
+                {/* Trade Information */}
                 <div className="text-sm text-gray-500 bg-blue-50 p-3 rounded-md">
                   <p><strong>Account GUIDs:</strong> Automatically fetched from customer's Cybrid accounts</p>
                   <p className="text-xs text-gray-400 mt-1">Trading account and fiat account GUIDs are retrieved dynamically</p>
@@ -504,27 +692,53 @@ export default function CybridPage() {
                   <p className="text-xs text-gray-400 mt-1">These values are automatically set for all trades</p>
                 </div>
 
-                <div className="flex justify-end space-x-2 pt-4">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setTradeDialogOpen(false)}
-                    disabled={submitting}
-                  >
-                    Cancel
-                  </Button>
-                  <Button type="submit" disabled={submitting}>
-                    {submitting ? (
-                      <>
-                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                        Processing...
-                      </>
-                    ) : (
-                      'Initiate Trade'
-                    )}
-                  </Button>
-                </div>
-              </form>
+                {/* Trade Form */}
+                <form onSubmit={handleTradeSubmit} className="space-y-4">
+                  <div>
+                    <Label htmlFor="amount">Amount</Label>
+                    <Input
+                      id="amount"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      placeholder="Enter amount"
+                      value={tradeForm.amount || ''}
+                      onChange={(e) => setTradeForm(prev => ({
+                        ...prev,
+                        amount: parseFloat(e.target.value) || 0
+                      }))}
+                      required
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Enter the amount for the trade</p>
+                  </div>
+                  
+                  <div className="flex space-x-3">
+                    <Button 
+                      type="submit" 
+                      disabled={submitting}
+                      className="flex-1"
+                    >
+                      {submitting ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                          Initiating Trade...
+                        </>
+                      ) : (
+                        'Initiate Trade'
+                      )}
+                    </Button>
+                    
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setTradeDialogOpen(false)}
+                      disabled={submitting}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </form>
+              </div>
             </DialogContent>
           </Dialog>
         </div>

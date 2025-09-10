@@ -34,12 +34,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const storedToken = localStorage.getItem('adminToken')
         const storedUser = localStorage.getItem('adminUser')
 
+        console.log('AuthContext: Checking stored data...')
+        console.log('Stored token:', storedToken ? 'exists' : 'missing')
+        console.log('Stored user:', storedUser ? 'exists' : 'missing')
 
         if (storedToken && storedUser) {
-          // Set token and user immediately to avoid redirect loops
-          setToken(storedToken)
-          setUser(JSON.parse(storedUser))
-          console.log('AuthContext: Set token and user from localStorage')
+          try {
+            const parsedUser = JSON.parse(storedUser)
+            console.log('AuthContext: Parsed user data:', parsedUser)
+            
+            // Set token and user immediately to avoid redirect loops
+            setToken(storedToken)
+            setUser(parsedUser)
+            console.log('AuthContext: Set token and user from localStorage')
+          } catch (parseError) {
+            console.error('AuthContext: Error parsing stored user data:', parseError)
+            // Clear invalid data
+            localStorage.removeItem('adminToken')
+            localStorage.removeItem('adminUser')
+          }
           
           // Skip token validation for now to prevent redirects
           // TODO: Re-enable token validation later if needed
@@ -62,6 +75,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
+      console.log('AuthContext: Starting login process...')
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:9000'}/api/admin/login`, {
         method: 'POST',
         headers: {
@@ -71,10 +85,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       })
 
       const data = await response.json()
+      console.log('AuthContext: Login response:', data)
 
       if (data.success) {
         const userData = data.data.user
         const userToken = data.data.token
+
+        console.log('AuthContext: Login successful, user data:', userData)
+        console.log('AuthContext: Token received:', userToken ? 'yes' : 'no')
 
         // Store in localStorage
         localStorage.setItem('adminToken', userToken)
@@ -84,8 +102,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setToken(userToken)
         setUser(userData)
 
+        console.log('AuthContext: State updated, user set to:', userData)
         return true
       } else {
+        console.log('AuthContext: Login failed:', data.message)
         return false
       }
     } catch (error) {
